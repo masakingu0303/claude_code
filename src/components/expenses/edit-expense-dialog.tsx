@@ -4,22 +4,43 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { expenseFormInputSchema, type ExpenseFormInputData } from '@/lib/validations/expense';
-import type { Category } from '@/types/database.types';
+import type { Database } from '@/types/database.types';
 
-interface ExpenseFormProps {
+type Expense = Database['public']['Tables']['expenses']['Row'] & {
+  categories: Database['public']['Tables']['categories']['Row'] | null;
+};
+
+type Category = Database['public']['Tables']['categories']['Row'];
+
+interface EditExpenseDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  expense: Expense | null;
   onSuccess?: () => void;
 }
 
-export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
+export default function EditExpenseDialog({ 
+  open, 
+  onOpenChange, 
+  expense,
+  onSuccess 
+}: EditExpenseDialogProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,31 +56,47 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
   // カテゴリデータを取得
   useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await fetch('/api/categories');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-
-        const data = await response.json();
-        setCategories(data);
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      }
+    if (open) {
+      fetchCategories();
     }
+  }, [open]);
 
-    fetchCategories();
-  }, []);
+  // 支出データをフォームに設定
+  useEffect(() => {
+    if (expense && open) {
+      form.reset({
+        amount: expense.amount.toString(),
+        category_id: expense.category_id,
+        description: expense.description || '',
+        expense_date: new Date(expense.expense_date),
+      });
+    }
+  }, [expense, open, form]);
+
+  async function fetchCategories() {
+    try {
+      const response = await fetch('/api/categories');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  }
 
   async function onSubmit(data: ExpenseFormInputData) {
+    if (!expense) return;
+
     setIsLoading(true);
     
     try {
       // APIルートに送信
-      const response = await fetch('/api/expenses', {
-        method: 'POST',
+      const response = await fetch(`/api/expenses/${expense.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -73,28 +110,21 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '支出の記録に失敗しました');
+        throw new Error(errorData.error || '支出の更新に失敗しました');
       }
 
-      const createdExpense = await response.json();
+      const updatedExpense = await response.json();
       
-      // 成功時の処理
-      form.reset({
-        amount: '',
-        category_id: '',
-        description: '',
-        expense_date: new Date(),
+      toast.success('支出を更新しました', {
+        description: `¥${parseFloat(data.amount).toLocaleString()} に更新しました。`,
       });
       
-      toast.success('支出を記録しました', {
-        description: `¥${parseFloat(data.amount).toLocaleString()} の支出を記録しました。`,
-      });
-      
+      onOpenChange(false);
       onSuccess?.();
       
     } catch (error) {
-      console.error('Failed to create expense:', error);
-      toast.error('支出の記録に失敗しました', {
+      console.error('Failed to update expense:', error);
+      toast.error('支出の更新に失敗しました', {
         description: error instanceof Error ? error.message : 'もう一度お試しください。',
       });
     } finally {
@@ -103,17 +133,15 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          支出を記録
-        </CardTitle>
-        <CardDescription>
-          金額とカテゴリを選択して支出を記録します
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-lg">
+        <DialogHeader>
+          <DialogTitle>支出を編集</DialogTitle>
+          <DialogDescription>
+            支出の内容を変更できます
+          </DialogDescription>
+        </DialogHeader>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* 金額入力 */}
@@ -217,17 +245,22 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
               )}
             />
 
-            {/* 送信ボタン */}
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading ? '記録中...' : '支出を記録'}
-            </Button>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                キャンセル
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? '更新中...' : '更新する'}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

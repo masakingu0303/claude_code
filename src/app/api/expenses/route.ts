@@ -1,8 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { expenseFormSchema } from '@/lib/validations/expense';
+import { expenseApiSchema } from '@/lib/validations/expense';
 import type { Database } from '@/types/database.types';
+
+// ユーザーがSupabaseのusersテーブルに存在することを確認し、存在しない場合は作成
+async function ensureUserExists(userId: string) {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client not available');
+  }
+
+  // まずユーザーが存在するかチェック
+  const { data: existingUser } = await (supabaseAdmin as any)
+    .from('users')
+    .select('id')
+    .eq('id', userId)
+    .single();
+
+  if (existingUser) {
+    return; // 既に存在する
+  }
+
+  // usersテーブルに基本情報で作成（Clerk情報は後で更新可能）
+  try {
+    const { error } = await (supabaseAdmin as any)
+      .from('users')
+      .insert({
+        id: userId,
+        email: `user_${userId}@example.com`, // 一時的なメールアドレス
+        name: null,
+      });
+
+    if (error) {
+      console.error('Failed to create user:', error);
+      throw new Error('Failed to create user in database');
+    }
+  } catch (error) {
+    console.error('Failed to create user in Supabase:', error);
+    throw error;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,8 +59,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ユーザーが存在しない場合は作成
+    await ensureUserExists(userId);
+
     const body = await request.json();
-    const validatedData = expenseFormSchema.parse(body);
+    const validatedData = expenseApiSchema.parse(body);
 
     // Supabaseに支出データを保存
     const expenseData: Database['public']['Tables']['expenses']['Insert'] = {
@@ -34,9 +74,9 @@ export async function POST(request: NextRequest) {
       expense_date: validatedData.expense_date.toISOString().split('T')[0], // YYYY-MM-DD形式に変換
     };
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (supabaseAdmin as any)
       .from('expenses')
-      .insert(expenseData as any)
+      .insert(expenseData)
       .select()
       .single();
 
@@ -55,7 +95,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
-        { error: 'バリデーションエラー', details: error },
+        { error: 'バリデーションエラー', details: error.message },
         { status: 400 }
       );
     }
@@ -85,12 +125,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // ユーザーが存在しない場合は作成
+    await ensureUserExists(userId);
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
     // 支出データを取得（カテゴリ情報も含める）
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (supabaseAdmin as any)
       .from('expenses')
       .select(`
         *,

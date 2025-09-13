@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserButton } from '@clerk/nextjs';
 import ExpenseForm from '@/components/forms/expense-form';
 import ExpenseList from '@/components/expenses/expense-list';
+import ExpenseSummary from '@/components/expenses/expense-summary';
 
 export default function DashboardPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -31,6 +32,11 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* 支出統計サマリー */}
+          <div className="mb-6">
+            <ExpenseSummary refreshTrigger={refreshTrigger} />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 支出記録フォーム */}
             <div className="lg:col-span-1">

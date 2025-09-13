@@ -1,12 +1,12 @@
 # CLAUDE.md
- 
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
- 
-## プロジェクト概要
- 
-**Money Tracker** - シンプルで継続できる家計簿アプリ
- 
-「3つの機能だけ。続けられる家計簿」をコンセプトに、支出記録、カテゴリ分け、ダッシュボード表示の必要最小限の機能で構成されています。
+
+## Project Overview
+
+**Money Tracker** - A simple, sustainable expense tracking app
+
+Built with the concept "3 functions only. A household budget you can stick with", consisting of minimal essential features: expense recording, categorization, and dashboard display.
  
 ## 開発ロードマップと進捗管理
  
@@ -25,15 +25,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [x] パッケージインストール（Supabase, Clerk, shadcn/ui）
 ```
  
-## 開発コマンド
- 
-```bash
-npm run dev      # 開発サーバー起動（Turbopack使用）
-npm run build    # プロダクションビルド
-npm start        # プロダクションサーバー起動
-npm run lint     # ESLint実行
-npm install      # パッケージインストール
-```
+## Development Commands
+
+- **Development server**: `npm run dev` (starts Next.js with Turbopack)
+- **Build**: `npm run build` (builds with Turbopack)
+- **Production server**: `npm run start`
+- **Lint**: `npm run lint` (ESLint with Next.js and TypeScript configs)
+- **Type check**: `npx tsc --noEmit` (mandatory before task completion)
  
 ## 環境設定
  
@@ -83,21 +81,31 @@ my-app/
 └── public/                    # 静的ファイル
 ```
  
-## アーキテクチャ
- 
-### 技術スタック
-- **フレームワーク**: Next.js 15 系 (App Router)
-- **言語**: TypeScript（strictモード）
-- **スタイリング**: Tailwind CSS v4 + shadcn/ui
-- **認証**: Clerk（メール認証、課金管理）
-- **データベース**: Supabase（PostgreSQL）
-- **ホスティング**: Vercel
- 
-### 主要な実装方針
-- **Supabase**: クラウド版を使用（Dockerは使用しない）
-- **認証連携**: API Routes経由でSupabaseにアクセス（Service Roleキー使用）
-- **課金**: Clerk Billingでプラン管理（スラグ: "premium"）
-- **テスト**: MVP目的のためテストは書かない
+## Project Architecture
+
+This is a Next.js 15.5.3 application using the App Router pattern with:
+
+- **Framework**: Next.js 15 with Turbopack for fast development and builds
+- **Language**: TypeScript with strict mode enabled
+- **Styling**: Tailwind CSS v4 with PostCSS + shadcn/ui components
+- **Authentication**: Clerk (email authentication, billing management)
+- **Database**: Supabase (PostgreSQL with Row Level Security)
+- **Fonts**: Geist font family (Geist and Geist Mono) from Google Fonts
+- **Structure**: App Router pattern with source files in `src/app/`
+- **Path aliases**: `@/*` maps to `./src/*`
+
+### Key Architecture Decisions
+
+- **Database Access Pattern**: All database operations go through API Routes (`/api/*`)
+  - Frontend components use fetch() to call API routes
+  - API routes use `supabaseAdmin` (service role key) for database access
+  - No direct Supabase client usage in frontend components
+- **Authentication Flow**: Clerk → API Routes → Supabase
+  - Clerk handles user authentication and session management
+  - API routes validate Clerk sessions using `auth()` from `@clerk/nextjs/server`
+  - User data stored in Supabase with Clerk user IDs as TEXT primary keys
+- **Type Safety**: Comprehensive TypeScript types generated from Supabase schema
+- **Component Architecture**: shadcn/ui components with custom styling
  
 ## 重要なドキュメント
  
@@ -139,25 +147,95 @@ my-app/
   - `.env.local` を Claude Code が読み込むことは絶対に避ける
 - デザインシステム（`.claude/design_system.md`）を厳守
  
-## 開発の流れ
- 
-1. これから行うタスクを理解する
-2. タスクに関する `.claude` 内のドキュメントの内容を理解する
-3. 設計を行う
-4. 実装を進める
-5. **必須: TypeScript型チェック実行** - `npx tsc --noEmit` でエラーがないことを確認
-6. 実装完了後、結果に関してユーザーに動作確認方法を伝える
+### Database Schema
 
-## 品質管理
+Key tables and relationships:
+- **users**: Stores Clerk user data (id as TEXT for Clerk compatibility)
+- **categories**: Predefined expense categories with icons and colors
+- **expenses**: User expense records linked to users and categories
 
-### TypeScript型チェック（必須）
-**各タスク完了前に必ずTypeScript型チェックを実行すること**
+Row Level Security (RLS) is enabled to ensure users only see their own data.
 
-```bash
-npx tsc --noEmit
-```
+### Current Implementation Status
 
-- すべての型エラーを解決してからタスク完了とする
-- 型の安全性を維持し、実行時エラーを防ぐ
-- `any` 型の使用は最小限に抑える
-- 型定義ファイル（`src/types/`）を適切に活用する
+Core features implemented:
+- ✅ User authentication (Clerk)
+- ✅ Expense recording form with validation
+- ✅ Category management (9 predefined categories)
+- ✅ Expense list display with category visualization
+- ✅ Dashboard integration
+- ✅ API routes for CRUD operations (`/api/expenses`, `/api/categories`)
+
+### Key Files and Structure
+- `src/app/layout.tsx`: Root layout with ClerkProvider and Toaster setup
+- `src/app/dashboard/page.tsx`: Main dashboard with expense form and list
+- `src/components/forms/expense-form.tsx`: Expense recording form
+- `src/components/expenses/expense-list.tsx`: Expense list display
+- `src/lib/supabase.ts`: Database client configuration
+- `src/types/database.types.ts`: Generated TypeScript types
+- `src/middleware.ts`: Clerk authentication middleware
+
+## Important Notes for Development
+
+1. **Environment Variables**: All required environment variables should be set in `.env.local` (not read by Claude Code)
+2. **Type Checking**: ALWAYS run `npx tsc --noEmit` before completing tasks
+3. **Database Access**: Use API routes only - never direct Supabase client in components
+4. **UI Consistency**: Follow existing shadcn/ui patterns and styling
+5. **Error Handling**: Include proper error handling with user-friendly messages
+
+## Development Knowledge and Best Practices
+
+### Common Issues and Solutions
+
+1. **UI Component Visibility Issues**
+   - **Problem**: shadcn/ui components (Select, Dialog, AlertDialog) may appear transparent
+   - **Solution**: Always add explicit styling: `className="bg-white border border-gray-200 shadow-lg"`
+   - **Apply to**: SelectContent, DialogContent, AlertDialogContent
+
+2. **User Management with Clerk + Supabase**
+   - **Problem**: Foreign key constraint errors when users don't exist in Supabase
+   - **Solution**: Implement `ensureUserExists()` function in API routes
+   - **Pattern**: Check user existence → Create if missing → Proceed with operation
+
+3. **Form Data Validation Between Frontend/Backend**
+   - **Problem**: Date objects become strings in JSON transmission
+   - **Solution**: Create separate schemas for frontend (`expenseFormInputSchema`) and API (`expenseApiSchema`)
+   - **Key**: Transform data types appropriately in each schema
+
+4. **Next.js 15 API Routes**
+   - **Change**: Dynamic route params are now Promise objects
+   - **Pattern**: `{ params }: { params: Promise<{ id: string }> }`
+   - **Usage**: `const { id } = await params;`
+
+5. **Missing Dependencies**
+   - **Common Missing Files**: `@/lib/utils.ts` for shadcn/ui components
+   - **Solution**: Create utils.ts with `cn` function using `clsx` and `tailwind-merge`
+
+### Development Patterns
+
+1. **CRUD Implementation Pattern**
+   - API Routes: `/api/resource` (GET, POST) and `/api/resource/[id]` (PUT, DELETE)
+   - Form Components: Use react-hook-form + Zod validation
+   - List Components: Include inline edit/delete actions with confirmation dialogs
+   - State Management: Use optimistic UI updates where possible
+
+2. **Error Handling Strategy**
+   - API Level: Detailed error logging with user-friendly messages
+   - Frontend Level: Toast notifications for user feedback
+   - Validation: Consistent error messages across client and server
+
+3. **Component Architecture**
+   - Form Components: Self-contained with validation and submission
+   - Dialog Components: Reusable with onSuccess callbacks
+   - List Components: Include CRUD actions and real-time updates
+
+### Technical Debt and Maintenance
+
+1. **Known Simplifications**
+   - User email addresses are placeholder values (`user_${userId}@example.com`)
+   - Could be enhanced with real Clerk user data integration
+
+2. **Future Improvements**
+   - Implement proper user profile management
+   - Add data validation at database level
+   - Consider implementing caching for better performance
