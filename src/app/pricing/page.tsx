@@ -3,6 +3,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
+import { PricingTableWrapper } from '@/components/pricing/pricing-table-wrapper';
 
 export default function PricingPage() {
   return (
@@ -10,17 +11,17 @@ export default function PricingPage() {
       <section className="py-16 bg-gradient-to-b from-indigo-50 to-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl animate-fade-in-up">
               料金プラン
             </h1>
-            <p className="mt-4 text-xl text-gray-600">
+            <p className="mt-4 text-xl text-gray-600 animate-fade-in-up animation-delay-200">
               シンプルな料金体系。必要な機能を選んでご利用ください。
             </p>
           </div>
 
           <div className="mt-16 grid gap-8 lg:grid-cols-2 lg:gap-12 max-w-4xl mx-auto">
             {/* 無料プラン */}
-            <Card className="relative">
+            <Card className="relative transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-fade-in-up animation-delay-400">
               <CardHeader className="text-center pb-8">
                 <CardTitle className="text-2xl font-bold">無料プラン</CardTitle>
                 <div className="mt-4">
@@ -52,7 +53,7 @@ export default function PricingPage() {
                 </div>
                 <div className="pt-6">
                   <Link href="/sign-up">
-                    <Button className="w-full" size="lg">
+                    <Button className="w-full transform hover:scale-105 transition-transform duration-200" size="lg">
                       無料で始める
                     </Button>
                   </Link>
@@ -61,9 +62,9 @@ export default function PricingPage() {
             </Card>
 
             {/* プレミアムプラン */}
-            <Card className="relative border-indigo-200 shadow-lg">
+            <Card className="relative border-indigo-200 shadow-lg transform hover:scale-105 transition-all duration-300 hover:shadow-2xl animate-fade-in-up animation-delay-600">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium animate-pulse">
                   おすすめ
                 </span>
               </div>
@@ -106,13 +107,26 @@ export default function PricingPage() {
                 </div>
                 <div className="pt-6">
                   <Link href="/sign-up">
-                    <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" size="lg">
+                    <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200" size="lg">
                       プレミアムを始める
                     </Button>
                   </Link>
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Clerk PricingTable */}
+          <div className="mt-20">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                今すぐ始める
+              </h2>
+              <p className="text-xl text-gray-600">
+                セキュアな決済でプレミアムプランにアップグレード
+              </p>
+            </div>
+            <PricingTableWrapper />
           </div>
 
           {/* よくある質問 */}

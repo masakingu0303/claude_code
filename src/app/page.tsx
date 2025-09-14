@@ -11,23 +11,23 @@ export default function HomePage() {
       <section className="bg-gradient-to-b from-indigo-50 to-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl animate-fade-in-up">
               <span className="text-indigo-600">3つの機能だけ</span>
               <br />
               続けられる家計簿
             </h1>
-            <p className="mt-6 text-xl leading-8 text-gray-600 max-w-2xl mx-auto">
+            <p className="mt-6 text-xl leading-8 text-gray-600 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
               支出記録、カテゴリ分け、ダッシュボード表示。
               必要最小限の機能で、誰でも簡単に継続できる家計簿アプリです。
             </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
+            <div className="mt-10 flex items-center justify-center gap-x-6 animate-fade-in-up animation-delay-400">
               <Link href="/sign-up">
-                <Button size="lg" className="px-8 py-3 text-lg">
+                <Button size="lg" className="px-8 py-3 text-lg transform hover:scale-105 transition-transform duration-200">
                   無料で始める
                 </Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
+                <Button variant="outline" size="lg" className="px-8 py-3 text-lg transform hover:scale-105 transition-transform duration-200">
                   料金を見る
                 </Button>
               </Link>
@@ -49,9 +49,9 @@ export default function HomePage() {
           </div>
 
           <div className="mt-16 grid gap-8 md:grid-cols-3">
-            <Card>
+            <Card className="transform hover:-translate-y-2 transition-all duration-300 hover:shadow-xl animate-fade-in-up animation-delay-600">
               <CardHeader className="text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 transform transition-transform duration-300 group-hover:scale-110">
                   <Wallet className="h-8 w-8 text-indigo-600" />
                 </div>
                 <CardTitle className="mt-4">機能1: 支出記録</CardTitle>
@@ -64,9 +64,9 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="transform hover:-translate-y-2 transition-all duration-300 hover:shadow-xl animate-fade-in-up animation-delay-700">
               <CardHeader className="text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 transform transition-transform duration-300 group-hover:scale-110">
                   <Target className="h-8 w-8 text-green-600" />
                 </div>
                 <CardTitle className="mt-4">機能2: カテゴリ分け</CardTitle>
@@ -79,9 +79,9 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="transform hover:-translate-y-2 transition-all duration-300 hover:shadow-xl animate-fade-in-up animation-delay-800">
               <CardHeader className="text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 transform transition-transform duration-300 group-hover:scale-110">
                   <BarChart3 className="h-8 w-8 text-purple-600" />
                 </div>
                 <CardTitle className="mt-4">機能3: ダッシュボード</CardTitle>

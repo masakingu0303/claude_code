@@ -27,11 +27,17 @@ Built with the concept "3 functions only. A household budget you can stick with"
  
 ## Development Commands
 
-- **Development server**: `npm run dev` (starts Next.js with Turbopack)
+- **Development server**: `npm run dev` (starts Next.js with Turbopack on http://localhost:3000)
 - **Build**: `npm run build` (builds with Turbopack)
 - **Production server**: `npm run start`
 - **Lint**: `npm run lint` (ESLint with Next.js and TypeScript configs)
 - **Type check**: `npx tsc --noEmit` (mandatory before task completion)
+
+### Testing and Development Utilities
+
+- **Test database connection**: Visit `/test-db` page (development only)
+- **Test forms**: Visit `/test-form` page (development only)
+- **Package installation**: `npm install` (when adding dependencies)
  
 ## 環境設定
  
@@ -61,23 +67,29 @@ NEXT_PUBLIC_BILLING_URL=https://accounts.your-domain.com/user
 ## プロジェクト構造
  
 ```
-my-app/
 ├── src/
 │   ├── app/                    # App Router
-│   │   ├── (auth)/            # 認証関連ページ
-│   │   ├── (dashboard)/       # ダッシュボード（認証必須）
-│   │   ├── api/               # API Routes
+│   │   ├── (auth)/            # 認証関連ページ (sign-in, sign-up)
+│   │   ├── api/               # API Routes (expenses, categories)
+│   │   ├── dashboard/         # ダッシュボードページ
+│   │   ├── pricing/           # 料金ページ
+│   │   ├── test-*/            # 開発用テストページ
 │   │   └── layout.tsx         # ルートレイアウト
 │   ├── components/            # 共通コンポーネント
+│   │   ├── forms/             # フォームコンポーネント
+│   │   ├── expenses/          # 支出関連コンポーネント
+│   │   └── ui/                # shadcn/ui コンポーネント
 │   ├── lib/                   # ユーティリティ、設定
-│   └── types/                 # TypeScript型定義
+│   ├── types/                 # TypeScript型定義
+│   └── middleware.ts          # Clerk認証ミドルウェア
 ├── .claude/                   # プロジェクトドキュメント
 │   ├── requirements.md        # 要件定義書
 │   ├── development_roadmap.md # 開発ロードマップ（進捗管理）
-│   ├── design_system.md       # デザインシステム
+│   ├── desine_system.md       # デザインシステム
 │   ├── supabase_document.md   # Supabase実装ガイド
 │   ├── clerk_document.md      # Clerk実装ガイド
-│   └── clerk_supabase_integration_document.md
+│   └── clerk_supabase_integration.md
+├── supabase/                  # Supabaseプロジェクト設定
 └── public/                    # 静的ファイル
 ```
  
